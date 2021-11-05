@@ -3,11 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        form > * {
+            padding: 5px;
+            margin: 5px;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .show > *{
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <form method="post" action="/share/upload" enctype="multipart/form-data" id="form">
-        <input name="file" type="file" />
-
+        <div>
+            <label for="file"> file to share: </label>
+            <input name="file" type="file" id="file"/>
+        </div>
+        <div id="select">
+            <input type="radio" name="saveType" value="byTime" id="saveByTime"> <label for="saveByTime">delete files uploaded after time duration</label>
+            <br>
+            <input type="radio" name="saveType" value="byCount" id="saveByCount" checked> <label for="saveByCount">delete files uploaded after once downloading</label>
+        </div>
+        <input type="text" name="saveTime" disabled id="saveTime" placeholder="delete after x minutes ( x <= 20)"/>
         <input type="button" value="提交" />
     </form>
 
@@ -16,10 +46,24 @@
     </div>
 
 <script>
+    document.getElementById("select").addEventListener("change", (e) => {
+        const input = document.querySelector("input[name='saveType']:checked").value
+
+        if(input === 'byTime') {
+            document.querySelector("#saveTime").removeAttribute("disabled")
+        } else {
+            document.querySelector("#saveTime").setAttribute("disabled", "disabled")
+        }
+    })
+
     document.querySelector('#form > input[type="button"]').addEventListener("click", (e) => {
         const formData = new FormData()
         const input = document.querySelector('input[type="file"]')
         formData.append("file", input.files[0])
+        formData.append("saveType", document.querySelector("input[name='saveType']:checked").value)
+        formData.append("saveTime", document.querySelector("#saveTime").value)
+
+
         fetch("/share/upload", {
             method: "POST",
             body: formData
@@ -28,6 +72,7 @@
         .then(resp => {
             if(resp["status"] === "ok") {
                 const show = document.querySelector('#show')
+                show.innerHTML = ''
 
                 const url = document.createElement("div")
                 url.innerHTML = `download url: <a href="${resp["fileUrl"]}"> ${resp["fileUrl"]} </a>`

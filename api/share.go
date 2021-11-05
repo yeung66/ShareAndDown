@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/yeung66/ShareAndDown/utils"
+	"strconv"
 )
 
 var route *gin.Engine
@@ -41,7 +42,7 @@ func uploadHandler(c *gin.Context) {
 	}
 
 	if file.Size > (20 << 20) { // 20 Mib
-		c.JSON(500, gin.H{
+		c.JSON(401, gin.H{
 			"status":  "error",
 			"message": "too large file with size over 20 Mib",
 		})
@@ -68,12 +69,32 @@ func uploadHandler(c *gin.Context) {
 		codeShow = ""
 	}
 
-	utils.AddFileInfo(file.Filename, savePath, token, codePath)
+	saveType := c.DefaultPostForm("saveType", "byCount")
+	saveTime := 0
+	if saveType == "byTime" {
+		saveTimeTemp := c.PostForm("saveTime")
+		saveTime, err = strconv.Atoi(saveTimeTemp)
+		if err != nil || saveTime <= 0 || saveTime > 20 {
+			c.JSON(401, gin.H{
+				"status":  "ok",
+				"message": "invalid time duration",
+			})
+			return
+		}
+	}
+
+	utils.AddFileInfo(file.Filename, savePath, token, codePath, saveTime)
 	c.JSON(200, gin.H{
-		"status":  "ok",
-		"qrcode":  codeShow,
-		"fileUrl": downloadUrl,
+		"status":       "ok",
+		"qrcode":       codeShow,
+		"fileUrl":      downloadUrl,
+		"save_type":    saveType,
+		"save_minutes": saveTime,
 	})
+
+	if saveTime > 0 {
+		utils.DelFileAfter(token, saveTime)
+	}
 
 }
 
@@ -94,4 +115,8 @@ func downloadHandler(c *gin.Context) {
 	c.Header("Content-Type", "application/octet-stream")
 
 	c.File(fileInfo.FilePath)
+
+	if !fileInfo.SaveFromTime {
+		utils.DelFile(token)
+	}
 }
