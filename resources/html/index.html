@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form method="post" action="/share/upload" enctype="multipart/form-data" id="form">
+        <input name="file" type="file" />
+
+        <input type="button" value="提交" />
+    </form>
+
+    <div id="show" style="width: 300px;">
+
+    </div>
+
+<script>
+    document.querySelector('#form > input[type="button"]').addEventListener("click", (e) => {
+        const formData = new FormData()
+        const input = document.querySelector('input[type="file"]')
+        formData.append("file", input.files[0])
+        fetch("/share/upload", {
+            method: "POST",
+            body: formData
+        })
+        .then(resp => resp.json())
+        .then(resp => {
+            if(resp["status"] === "ok") {
+                const show = document.querySelector('#show')
+
+                const url = document.createElement("div")
+                url.innerHTML = `download url: <a href="${resp["fileUrl"]}"> ${resp["fileUrl"]} </a>`
+                show.appendChild(url)
+
+                if(resp["qrcode"].length !== 0) {
+                    const img = document.createElement('img')
+                    img.src = resp["qrcode"]
+                    show.appendChild(img)
+                }
+            } else {
+                document.querySelector("#show").innerHTML = JSON.stringify(resp, null, 2)
+            }
+
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+    })
+</script>
+
+</body>
+</html>
