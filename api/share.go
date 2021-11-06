@@ -9,6 +9,10 @@ import (
 var route *gin.Engine
 var resourcePath string = "./resources"
 
+var (
+	maxSaveMinutes = 20
+)
+
 func InitServer() {
 	route = gin.Default()
 
@@ -32,6 +36,13 @@ func SetUploadPath(path string) {
 }
 
 func uploadHandler(c *gin.Context) {
+	if !utils.AllowUpload() {
+		c.JSON(503, gin.H{
+			"status":  "error",
+			"message": "too much files uploaded",
+		})
+	}
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -47,6 +58,20 @@ func uploadHandler(c *gin.Context) {
 			"message": "too large file with size over 20 Mib",
 		})
 		return
+	}
+
+	saveType := c.DefaultPostForm("saveType", "byCount")
+	saveTime := 0
+	if saveType == "byTime" {
+		saveTimeTemp := c.PostForm("saveTime")
+		saveTime, err = strconv.Atoi(saveTimeTemp)
+		if err != nil || saveTime <= 0 || saveTime > maxSaveMinutes {
+			c.JSON(400, gin.H{
+				"status":  "ok",
+				"message": "invalid time duration",
+			})
+			return
+		}
 	}
 
 	token := utils.TokenGenerator()
@@ -69,20 +94,6 @@ func uploadHandler(c *gin.Context) {
 		codeShow = ""
 	}
 
-	saveType := c.DefaultPostForm("saveType", "byCount")
-	saveTime := 0
-	if saveType == "byTime" {
-		saveTimeTemp := c.PostForm("saveTime")
-		saveTime, err = strconv.Atoi(saveTimeTemp)
-		if err != nil || saveTime <= 0 || saveTime > 20 {
-			c.JSON(401, gin.H{
-				"status":  "ok",
-				"message": "invalid time duration",
-			})
-			return
-		}
-	}
-
 	utils.AddFileInfo(file.Filename, savePath, token, codePath, saveTime)
 	c.JSON(200, gin.H{
 		"status":       "ok",
@@ -94,6 +105,8 @@ func uploadHandler(c *gin.Context) {
 
 	if saveTime > 0 {
 		utils.DelFileAfter(token, saveTime)
+	} else {
+		utils.DelFileAfter(token, maxSaveMinutes)
 	}
 
 }

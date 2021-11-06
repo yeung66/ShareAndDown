@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	fileInfos = make(map[string]FileInfo, 0)
-	lock      = sync.RWMutex{}
+	fileInfos   = make(map[string]FileInfo, 0)
+	lock        = sync.RWMutex{}
+	maxFilesNum = 50
 )
 
 type FileInfo struct {
@@ -25,6 +26,12 @@ type FileInfo struct {
 	IsDownloaded bool
 
 	QRCode string
+}
+
+func AllowUpload() bool {
+	lock.RLock()
+	defer lock.RUnlock()
+	return len(fileInfos) <= maxFilesNum
 }
 
 func AddFileInfo(filename string, path string, token string, codePath string, saveTime int) {
@@ -93,10 +100,9 @@ func DelFileAfter(token string, after int) {
 	defer lock.RUnlock()
 
 	if f, ok := fileInfos[token]; ok {
-		timer := time.NewTimer(time.Duration(after) * time.Minute)
 		fmt.Printf("delete file %s after %d minutes\n", f.Filename, after)
 		go func() {
-			<-timer.C
+			<-time.After(time.Duration(after) * time.Minute)
 			DelFile(token)
 		}()
 	}
