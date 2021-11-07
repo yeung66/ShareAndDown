@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/yeung66/ShareAndDown/utils"
+	"os"
 	"strconv"
 )
 
@@ -11,6 +12,7 @@ var resourcePath string = "./resources"
 
 var (
 	maxSaveMinutes = 20
+	port           = "8000"
 )
 
 func InitServer() {
@@ -28,7 +30,10 @@ func InitServer() {
 		sendGroup.GET("/download/:token", downloadHandler)
 	}
 
-	route.Run(":8000")
+	if p, ok := os.LookupEnv("PORT"); ok {
+		port = p
+	}
+	route.Run(":" + port)
 }
 
 func SetUploadPath(path string) {
