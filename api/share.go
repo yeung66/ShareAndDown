@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/yeung66/ShareAndDown/api/middleware"
 	"github.com/yeung66/ShareAndDown/utils"
 	"os"
 	"strconv"
@@ -29,6 +30,8 @@ func InitServer() {
 		sendGroup.POST("/upload", uploadHandler)
 		sendGroup.GET("/download/:token", downloadHandler)
 	}
+
+	route.Use(middleware.BodySizeMiddleware)
 
 	if p, ok := os.LookupEnv("PORT"); ok {
 		port = p
