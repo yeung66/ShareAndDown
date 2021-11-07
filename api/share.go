@@ -93,8 +93,8 @@ func uploadHandler(c *gin.Context) {
 		return
 	}
 
-	codePath := resourcePath + "/static/qrcodes/" + token + file.Filename + ".jpg"
-	codeShow := "http://" + c.Request.Host + "/static/qrcodes/" + token + file.Filename + ".jpg"
+	codePath := resourcePath + "/static/qrcodes/" + token + ".jpg"
+	codeShow := "http://" + c.Request.Host + "/static/qrcodes/" + token + ".jpg"
 	downloadUrl := "http://" + c.Request.Host + "/share/download/" + token
 	err = utils.GenQRCode(downloadUrl, codePath)
 	if err != nil {
