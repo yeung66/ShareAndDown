@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/fogleman/gg v1.3.0 // indirect
+	github.com/gin-contrib/size v0.0.0-20211002110825-4c208e0712f3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.4 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

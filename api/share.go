@@ -1,8 +1,9 @@
 package api
 
 import (
+	limits "github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
-	"github.com/yeung66/ShareAndDown/api/middleware"
+
 	"github.com/yeung66/ShareAndDown/utils"
 	"os"
 	"strconv"
@@ -12,12 +13,14 @@ var route *gin.Engine
 var resourcePath string = "./resources"
 
 var (
-	maxSaveMinutes = 20
-	port           = "8000"
+	maxSaveMinutes       = 20
+	port                 = "8000"
+	maxBodyBytes   int64 = 25 << 20
 )
 
 func InitServer() {
 	route = gin.Default()
+	route.Use(limits.RequestSizeLimiter(maxBodyBytes))
 
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	route.MaxMultipartMemory = 20 << 20 // 20Mib
@@ -30,8 +33,6 @@ func InitServer() {
 		sendGroup.POST("/upload", uploadHandler)
 		sendGroup.GET("/download/:token", downloadHandler)
 	}
-
-	route.Use(middleware.BodySizeMiddleware)
 
 	if p, ok := os.LookupEnv("PORT"); ok {
 		port = p
@@ -49,9 +50,15 @@ func uploadHandler(c *gin.Context) {
 			"status":  "error",
 			"message": "too much files uploaded",
 		})
+		return
 	}
 
 	file, err := c.FormFile("file")
+
+	if len(c.Errors) > 0 {
+		return
+	}
+
 	if err != nil {
 		c.JSON(500, gin.H{
 			"status":  "error",
