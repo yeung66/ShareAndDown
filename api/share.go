@@ -37,7 +37,7 @@ func InitServer() {
 	if p, ok := os.LookupEnv("PORT"); ok {
 		port = p
 	}
-	route.Run(":" + port)
+	route.Run("localhost:" + port)
 }
 
 func SetUploadPath(path string) {
