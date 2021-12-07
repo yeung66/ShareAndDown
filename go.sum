@@ -67,6 +67,8 @@ github.com/yeqown/go-qrcode v1.5.9-0.20211018122504-06c487c9348f h1:66C2GndOlQsB
 github.com/yeqown/go-qrcode v1.5.9-0.20211018122504-06c487c9348f/go.mod h1:C1eAU4Jure3vqD56kqzeSLaX84MHg3fZAMNID4nXX+Y=
 github.com/yeqown/go-qrcode v1.5.9 h1:dYHE+GlFxorzETvUf2k2rKMBE83IRtMfER+JdEKSItM=
 github.com/yeqown/go-qrcode v1.5.9/go.mod h1:0FVyJ3MV9fF5lfAgTr0INcy+3rupmJhjp0mL3Z9eYXk=
+github.com/yeqown/go-qrcode v1.5.10 h1:87GCtypY9oOadB7yGRW4qlgAoDOop8G4JEdqOQwu1WI=
+github.com/yeqown/go-qrcode v1.5.10/go.mod h1:0FVyJ3MV9fF5lfAgTr0INcy+3rupmJhjp0mL3Z9eYXk=
 github.com/yeqown/reedsolomon v1.0.0 h1:x1h/Ej/uJnNu8jaX7GLHBWmZKCAWjEJTetkqaabr4B0=
 github.com/yeqown/reedsolomon v1.0.0/go.mod h1:P76zpcn2TCuL0ul1Fso373qHRc69LKwAw/Iy6g1WiiM=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
