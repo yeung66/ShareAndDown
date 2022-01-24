@@ -1,50 +1,23 @@
 package api
 
 import (
-	limits "github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
 
 	"github.com/yeung66/ShareAndDown/utils"
-	"os"
 	"strconv"
 )
 
-var route *gin.Engine
-var resourcePath string = "./resources"
+var ResourcePath = "./resources"
 
 var (
-	maxSaveMinutes       = 20
-	port                 = "8000"
-	maxBodyBytes   int64 = 25 << 20
+	maxSaveMinutes = 20
 )
 
-func InitServer() {
-	route = gin.Default()
-	route.Use(limits.RequestSizeLimiter(maxBodyBytes))
-
-	// Set a lower memory limit for multipart forms (default is 32 MiB)
-	route.MaxMultipartMemory = 20 << 20 // 20Mib
-
-	route.Static("/index", resourcePath+"/html")
-	route.Static("/static", resourcePath+"/static")
-
-	sendGroup := route.Group("/share")
-	{
-		sendGroup.POST("/upload", uploadHandler)
-		sendGroup.GET("/download/:token", downloadHandler)
-	}
-
-	if p, ok := os.LookupEnv("PORT"); ok {
-		port = p
-	}
-	route.Run("localhost:" + port)
-}
-
 func SetUploadPath(path string) {
-	resourcePath = path
+	ResourcePath = path
 }
 
-func uploadHandler(c *gin.Context) {
+func UploadHandler(c *gin.Context) {
 	if !utils.AllowUpload() {
 		c.JSON(503, gin.H{
 			"status":  "error",
@@ -90,7 +63,7 @@ func uploadHandler(c *gin.Context) {
 	}
 
 	token := utils.TokenGenerator()
-	savePath := resourcePath + "/upload/" + token + file.Filename
+	savePath := ResourcePath + "/upload/" + token + file.Filename
 	err = c.SaveUploadedFile(file, savePath)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -100,7 +73,7 @@ func uploadHandler(c *gin.Context) {
 		return
 	}
 
-	codePath := resourcePath + "/static/qrcodes/" + token + ".jpg"
+	codePath := ResourcePath + "/static/qrcodes/" + token + ".jpg"
 	codeShow := "http://" + c.Request.Host + "/static/qrcodes/" + token + ".jpg"
 	downloadUrl := "http://" + c.Request.Host + "/share/download/" + token
 	err = utils.GenQRCode(downloadUrl, codePath)
@@ -126,7 +99,7 @@ func uploadHandler(c *gin.Context) {
 
 }
 
-func downloadHandler(c *gin.Context) {
+func DownloadHandler(c *gin.Context) {
 	token := c.Param("token")
 
 	fileInfo, err := utils.GetFileInfo(token)

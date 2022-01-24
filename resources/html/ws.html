@@ -1,0 +1,100 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+</head>
+
+<body>
+<h3>WebSocket Go</h3>
+<button id="create">
+    创建
+</button>
+<div>
+    <input type="text" name="" id="chat-input" />
+    <button id="join">join</button>
+</div>
+<div>
+    <input type="text" name="" id="msg-input" />
+    <button id="send">send</button>
+</div>
+
+<div id="title">
+
+</div>
+<div id="log">
+
+</div>
+
+<script>
+    const host = window.location.host
+    $('#create').on('click', function() {
+        fetch('/chat', {
+            method: 'GET'
+        })
+        .then (resp => resp.json())
+        .then(resp => {
+            if (resp['websocketToken']) {
+                const conn = new WebSocket(`ws://${host}/ws/chat/${resp["websocketToken"]}`)
+
+                conn.addEventListener('open', () => {
+                    $('#title').append("chat room: " + resp["chatToken"])
+                    $('#log').append("connection established!\n").append("<br/>")
+
+                    $('#send').on('click', () => {
+                        const txt = $('#msg-input').val()
+                        conn.send(txt)
+                        $('#log').append(`${new Date()} | user ${resp['websocketToken']}: ${txt}\n`).append("<br/>")
+                        $('#msg-input').val('')
+                    })
+                })
+
+                conn.addEventListener('message', (msg) => {
+                    const msgJson = JSON.parse(msg.data)
+                    $('#log').append(`${new Date()} | user ${msgJson['send']}: ${msgJson['message']}\n`).append("<br/>")
+
+                })
+
+                
+            }
+        })
+    })
+
+    $('#join').on('click', () => {
+        const chatToken = $('#chat-input').val()
+        fetch('/chat/' + chatToken, {
+            method: 'GET'
+        })
+        .then(resp => {
+            if (resp.status !== 200) {
+                $('#title').text('wrong chat room token')
+                return
+            }
+            return resp.json()
+        })
+        .then( resp => {
+            
+            const conn = new WebSocket(`ws://${host}/ws/chat/${resp["websocketToken"]}`)
+
+                conn.addEventListener('open', () => {
+                    $('#title').append("chat room: " + resp["chatToken"])
+                    $('#log').append("connection established!\n").append("<br/>")
+
+                    $('#send').on('click', () => {
+                        const txt = $('#msg-input').val()
+                        conn.send(txt)
+                        $('#log').append(`${new Date()} | user ${resp['websocketToken']}: ${txt}\n`).append("<br/>")
+                        $('#msg-input').empty()
+                    })
+                })
+
+                conn.addEventListener('message', (msg) => {
+                    const msgJson = JSON.parse(msg.data)
+                    $('#log').append(`${new Date()} | user ${msgJson['send']}: ${msgJson['message']}\n`).append("<br/>")
+
+                })
+        })
+    })
+
+</script>
+
+</body>
+</html>

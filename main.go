@@ -1,8 +1,9 @@
 package main
 
-import "github.com/yeung66/ShareAndDown/api"
+import (
+	"github.com/yeung66/ShareAndDown/web"
+)
 
 func main() {
-	api.InitServer()
-
+	web.InitServer()
 }
